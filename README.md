@@ -1,1 +1,2 @@
-#HW of course Deep Learning for Computer Vision
+These are the two Python files corresponding to Assignment 1.
+
