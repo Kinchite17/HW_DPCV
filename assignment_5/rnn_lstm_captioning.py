@@ -143,8 +143,8 @@ class WordEmbedding(nn.Module):
 
 
 def temporal_softmax_loss(x, y, ignore_index=None):
-    loss = F.cross_entropy(x.view(-1, x.size(-1)), y.view(-1), 
-                          ignore_index=ignore_index, reduction='sum') / x.size(0)
+    loss = F.cross_entropy(x.contiguous().view(-1, x.size(-1)), y.contiguous().view(-1), 
+                            ignore_index=ignore_index, reduction='sum') / x.size(0)
     return loss
 
 

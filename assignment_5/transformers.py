@@ -70,6 +70,7 @@ def scaled_dot_product_no_loop_batch(
     scores = torch.bmm(query, key.transpose(1, 2)) / math.sqrt(M)
     
     if mask is not None:
+        mask = mask.to(scores.device)
         scores = scores.masked_fill(mask, -1e9)
     
     weights_softmax = F.softmax(scores, dim=2)
@@ -299,9 +300,12 @@ def position_encoding_sinusoid(K: int, M: int) -> Tensor:
     div_term = torch.exp(torch.arange(0, M, 2).float() * -(math.log(10000.0) / M))
     
     y = torch.zeros(K, M)
-    y[:, 0::2] = torch.sin(pos * div_term)
-    y[:, 1::2] = torch.cos(pos * div_term)
-    
+    sin_indices = torch.arange(0, M, 2)
+    cos_indices = torch.arange(1, M, 2)
+
+    y[:, sin_indices] = torch.sin(pos * div_term[:len(sin_indices)])
+    y[:, cos_indices] = torch.cos(pos * div_term[:len(cos_indices)])
+
     return y.unsqueeze(0)
 
 
@@ -344,7 +348,7 @@ class Transformer(nn.Module):
         mask = get_subsequent_mask(ans_b[:, :-1])
         dec_out = self.decoder(a_emb_inp, enc_out, mask)
         
-        return dec_out
+        return dec_out.view(-1, dec_out.size(-1))
 
 
 class AddSubDataset(torch.utils.data.Dataset):
